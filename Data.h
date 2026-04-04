@@ -39,7 +39,7 @@ struct InputData
     vector<tuple<int,int,int>> edges; // These are the Road connections (u, v, weight)
                                       // u and v are node indices, weight = travel time in minutes
     vector<DisasterSite> sites; // List of all the disaster sites
-    vector<Responder> reponders; // List of rescue teams ready to help
+    vector<Responder> responders; // List of rescue teams ready to help
     vector<Resource> resources; // all the items that can be shipped in relief vehicles
     int knapsackCapacity;  // Max weight a vehicle is allowed to carry
 };

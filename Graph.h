@@ -32,6 +32,12 @@ class Graph {
 
         // For visualisation of routes
         void visualizeRoute(const std::vector<int>& path);
+
+        void setNodeNames(const std::vector<std::string>& names){
+            nodeNames = names;
+        }
+
+        
 };
 
 #endif

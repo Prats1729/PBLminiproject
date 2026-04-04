@@ -39,7 +39,7 @@ void Graph::visualizeRoute(const std::vector<int>& path) {
     for (size_t i = 0; i < path.size(); ++i){ // loop through each node
         int currentNode = path[i];
         std::string nodeName = nodeNames[currentNode]; // name of current node
-        std::cout << "Step "<< (i+1) << ": "<< nodeName; // for sequential steps
+        std::cout << "Step "<< (i+1) << ": "<< nodeName << "\n"; // for sequential steps
         if (i > 0){
             int prevNode = path[i-1];
             // Find the weight between prevNode and currentNode
