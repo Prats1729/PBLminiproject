@@ -33,6 +33,11 @@ class Graph {
         // For visualisation of routes
         void visualizeRoute(const std::vector<int>& path);
 
+        int getNumNodes() const {return numNodes;}
+
+        // getting adj list for reference
+        const std::vector<Edge>& getAdj(int node) const { return adj[node]; }
+
         void setNodeNames(const std::vector<std::string>& names){
             nodeNames = names;
         }

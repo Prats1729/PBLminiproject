@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Data.h"
 #include "Graph.h"
+#include "bfs.h"
 
 int main(){
     std::cout <<"---Loading Disaster Scenario---\n";
@@ -29,17 +30,28 @@ int main(){
     // Just for testing im not using any actuall algo
     std::vector<int> samplePath = {0, 1, 2};
 
-    std::cout << "\n---Sample Route Display---\n";
-    disasterGraph.visualizeRoute(samplePath);
+    // using bfs to find the responder from start node which is node 0 (hospital for noe)
+    std::vector<int> responderNodeIds = {0, 1};
+    int bfsDistance = 0;
+    std::vector<int> bfspath = bfsNearestResponder(
+        disasterGraph, 3, responderNodeIds, bfsDistance
+    );
 
-    // data summary
-    std::cout << "---Data Summary---\n";
-    std::cout << "Nodes: " << disasterData.numNodes << "\n";
-    std::cout << "disasterData.sites size: " << disasterData.sites.size() << endl;
-    std::cout << "responders size: "<< disasterData.responders.size() << endl;
+    std::cout << "\n---Bfs: Nearest Responder---\n";
+    if (!bfspath.empty()) {
+        std::cout << "Nearest responder found in " << bfsDistance << " hops\n";
+        disasterGraph.visualizeRoute(bfspath);
+    } else {
+        std::cout << "No responder reachable\n";
+    }
+    // // data summary
+    // std::cout << "---Data Summary---\n";
+    // std::cout << "Nodes: " << disasterData.numNodes << "\n";
+    // std::cout << "disasterData.sites size: " << disasterData.sites.size() << endl;
+    // std::cout << "responders size: "<< disasterData.responders.size() << endl;
 
-    std::cout << "\n---System is kinda ready  ig---\n";
-    std::cout << "Exitinf";
+    // std::cout << "\n---System is kinda ready  ig---\n";
+    // std::cout << "Exitinf";
 
     return 0;
 }
