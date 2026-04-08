@@ -2,56 +2,99 @@
 #include "Data.h"
 #include "Graph.h"
 #include "bfs.h"
+#include "dijkstra.h"
+#include "knapsack.h"
 
-int main(){
-    std::cout <<"---Loading Disaster Scenario---\n";
+using namespace std;
+
+int main() {
+    cout << "---Loading Disaster Scenario---\n";
     InputData disasterData = loadHardcodedData();
 
-    std::cout << "---Creating Graph---\n";
+    cout << "---Creating Graph---\n";
     Graph disasterGraph(disasterData.numNodes);
     disasterGraph.setNodeNames(disasterData.nodeNames);
 
-    std::cout << "---Building Road Network---\n";
-    for (const auto& edge : disasterData.edges){
-        //Extracting tuple components u,v w
-        int u = std::get<0>(edge);
-        int v = std::get<1>(edge);
-        int weight = std::get<2>(edge);
+    cout << "---Building Road Network---\n";
+    for (const auto& edge : disasterData.edges) {
+        int u = get<0>(edge);
+        int v = get<1>(edge);
+        int weight = get<2>(edge);
 
-        // adding the biderectional road b/w u and v witht the travel time
         disasterGraph.addEdge(u, v, weight);
-        std::cout << "Added road: " << disasterData.nodeNames[u] << " <--> " <<        disasterData.nodeNames[v] << "( " << weight << " mins travell)\n";
-
+        cout << "Added road: " << disasterData.nodeNames[u] << " <--> "
+             << disasterData.nodeNames[v] << " ( " << weight
+             << " mins travel )\n";
     }
 
-    std::cout << "---Displaying Graph Map---\n";
+    cout << "---Displaying Graph Map---\n";
     disasterGraph.printGraph();
 
-    // Just for testing im not using any actuall algo
-    std::vector<int> samplePath = {0, 1, 2};
+    // ---------------------------------------------------------
+    //  BFS: Print **all** responders reachable from start node
+    // ---------------------------------------------------------
+    vector<int> responderNodeIds = {0, 1};  // known responder IDs
+    vector<int> allReachable = bfsAllResponders(
+        disasterGraph,        // graph
+        0,                    // start node (disaster origin)
+        responderNodeIds);    // list of possible responders
 
-    // using bfs to find the responder from start node which is node 0 (hospital for noe)
-    std::vector<int> responderNodeIds = {0, 1};
-    int bfsDistance = 0;
-    std::vector<int> bfspath = bfsNearestResponder(
-        disasterGraph, 3, responderNodeIds, bfsDistance
-    );
-
-    std::cout << "\n---Bfs: Nearest Responder---\n";
-    if (!bfspath.empty()) {
-        std::cout << "Nearest responder found in " << bfsDistance << " hops\n";
-        disasterGraph.visualizeRoute(bfspath);
+    cout << "\n---BFS: All Reachable Responders---\n";
+    if (!allReachable.empty()) {
+        cout << "Responders reachable from node 0:\n";
+        for (int id : allReachable) {
+            cout << "  - Responder ID " << id
+                 << " (" << disasterData.nodeNames[id] << ")\n";
+        }
     } else {
-        std::cout << "No responder reachable\n";
+        cout << "No responders reachable from the start node.\n";
     }
-    // // data summary
-    // std::cout << "---Data Summary---\n";
-    // std::cout << "Nodes: " << disasterData.numNodes << "\n";
-    // std::cout << "disasterData.sites size: " << disasterData.sites.size() << endl;
-    // std::cout << "responders size: "<< disasterData.responders.size() << endl;
 
-    // std::cout << "\n---System is kinda ready  ig---\n";
-    // std::cout << "Exitinf";
+    // ---------------------------------------------------------
+    // Dijkstra: Find the *fastest* responder (minimum travel time)
+    // ---------------------------------------------------------
+    Dijkstra dijkstra(disasterGraph);
+    dijkstra.computeShortestPaths(0);   // pre‑compute distances from start node
 
+    int closestResponder = -1;
+    int minDistance = numeric_limits<int>::max();
+    for (int responderId : responderNodeIds) {
+        int dist = dijkstra.getDistance(responderId);
+        if (dist < minDistance) {
+            minDistance = dist;
+            closestResponder = responderId;
+        }
+    }
+
+    cout << "\n---Dijkstra: Nearest Responder (by time)---\n";
+    if (closestResponder != -1) {
+        cout << "Nearest responder found in " << minDistance
+             << " minutes (ID " << closestResponder << ")\n";
+        vector<int> path = dijkstra.getPath(closestResponder);
+        disasterGraph.visualizeRoute(path);
+    } else {
+        cout << "No responder reachable.\n";
+    }
+
+    // ---------------------------------------------------------
+    //  Knapsack: Optimal resource allocation for rescue truck
+    // ---------------------------------------------------------
+    if (closestResponder != -1) {
+        // Create knapsack solver for this responder
+        KnapsackSolver solver(disasterData);
+        vector<int> optimalResources = solver.allocateResources(closestResponder);
+
+        cout << "\n---Optimal Resource Allocation---\n";
+        cout << "Responder ID " << closestResponder
+             << " can carry:\n";
+        for (int resourceId : optimalResources) {
+            const Resource& res = disasterData.resources[resourceId];
+            cout << "  - " << res.name
+                 << " (weight=" << res.weight
+                 << ", value=" << res.value << ")\n";
+        }
+    }
+
+    cout << "\n---System is ready---\n";
     return 0;
 }
