@@ -1,14 +1,14 @@
 #ifndef BFS_H
 #define BFS_H
 
-#include "Data.h"
 #include "Graph.h"
 #include <vector>
 
+// Find all responder nodes reachable from startNode via BFS traversal.
 std::vector<int> bfsAllResponders(
-    const Graph &graph, // a readonly reference to the graph
-    int startNode, // node where disaster starts
-    const std::vector<int> &responderNodes // list of responder IDs
+    const Graph& graph,
+    int startNode,
+    const std::vector<int>& responderNodes
 );
 
-#endif
+#endif // BFS_H

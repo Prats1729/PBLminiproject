@@ -2,33 +2,29 @@
 #define DIJKSTRA_H
 
 #include "Graph.h"
-#include <vector>
-#include <queue>
-#include <unordered_map>
 #include <limits>
+#include <unordered_map>
+#include <vector>
 
-using namespace std;
-
+// Computes single-source shortest paths on the city graph using Dijkstra's algorithm.
 class Dijkstra {
 public:
     explicit Dijkstra(const Graph& graph);
 
-    // Compute shortest paths from startNode to all nodes
-    vector<int> computeShortestPaths(int startNode);
+    // Compute shortest distances from startNode to every reachable node.
+    std::vector<int> computeShortestPaths(int startNode);
 
-    // Get distance from startNode to targetNode
-    int getDistance(int targetNode);
+    // Distance from the last-computed source to targetNode (INT_MAX if unreachable).
+    int getDistance(int targetNode) const;
 
-    // Get the actual shortest path as node indices
-    vector<int> getPath(int targetNode);
+    // Reconstruct the shortest path as a sequence of node indices.
+    std::vector<int> getPath(int targetNode) const;
 
 private:
-    const Graph& graph;
-    vector<int> distances;
-    unordered_map<int, int> predecessors;
-    vector<bool> processed;
-
-    void dijkstraStep(int currentNode);
+    const Graph& graph_;
+    std::vector<int>  distances_;
+    std::vector<bool> processed_;
+    std::unordered_map<int, int> predecessors_;
 };
 
 #endif // DIJKSTRA_H

@@ -2,18 +2,18 @@
 #define KNAPSACK_H
 
 #include "Data.h"
+#include <vector>
 
+// 0/1 Knapsack solver for optimal relief-resource allocation.
 class KnapsackSolver {
 public:
-    KnapsackSolver(const InputData& data);
+    explicit KnapsackSolver(const InputData& data);
 
-    // Compute optimal resource allocation for a given responder
+    // Select the best set of resources that fit within the vehicle capacity.
     std::vector<int> allocateResources(int responderId);
 
 private:
-    const InputData& data;
-    std::vector<int> dp; // DP array for knapsack
-    std::vector<int> parent; // Parent pointers for path reconstruction
+    const InputData& data_;
 };
 
 #endif // KNAPSACK_H

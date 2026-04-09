@@ -2,49 +2,43 @@
 #define DATA_H
 
 #include <string>
-#include <vector>
 #include <tuple>
+#include <vector>
 
-using namespace std;
-
-// This struct represents the actual disaster site
-struct DisasterSite{
-    int nodeId;  // This is the graphs node id, its the position in the map
-    string name; // name of the location eg- hospital/school
-    int severity; // on a scale of 1-10 how critical is the situation
-    int population; // number of people affected there
+// Represents a disaster-affected location on the city graph.
+struct DisasterSite {
+    int nodeId;           // Graph node index (position on the map)
+    std::string name;     // Human-readable label, e.g. "Hospital"
+    int severity;         // Criticality on a 1–10 scale
+    int population;       // Number of people affected
 };
 
-// This structure represents a rescue team
-struct Resource
-{
-    string name;  // Type of resource medkits, water tanker etc
-    int weight;  // space/effort required to carry
-    int value;  // Effectiveness score 1-100
+// A single relief item that can be loaded onto a rescue vehicle.
+struct Resource {
+    std::string name;     // Type of resource, e.g. "Medkits"
+    int weight;           // Space / effort required to carry
+    int value;            // Effectiveness score (1–100)
 };
 
-// This struct is about the Responders
-struct Responder
-{
-    int nodeId;  // Where the team is situated at
-    string name;  // name of team, eg - ambulance, resquesquad
-    string type;  // type of assistance, fire, mmedical, rescue
+// A rescue team stationed at a graph node.
+struct Responder {
+    int nodeId;           // Where the team is stationed
+    std::string name;     // Team label, e.g. "Ambulance 1"
+    std::string type;     // Assistance category: "Medical", "Fire", "Rescue"
 };
 
-// All the info that needs to be loaded for a disater
-struct InputData
-{
-    int numNodes; // Number of locations in the map
-    vector<string> nodeNames; // Name of each node eg- hosptial/park
-    vector<tuple<int,int,int>> edges; // These are the Road connections (u, v, weight)
-                                      // u and v are node indices, weight = travel time in minutes
-    vector<DisasterSite> sites; // List of all the disaster sites
-    vector<Responder> responders; // List of rescue teams ready to help
-    vector<Resource> resources; // all the items that can be shipped in relief vehicles
-    int knapsackCapacity;  // Max weight a vehicle is allowed to carry
+// Complete scenario data loaded at startup.
+struct InputData {
+    int numNodes;                                   // Locations in the map
+    std::vector<std::string> nodeNames;             // Label per node
+    std::vector<std::tuple<int, int, int>> edges;   // Roads: (u, v, travel-time)
+    std::vector<DisasterSite> sites;                // Disaster sites
+    std::vector<Responder> responders;              // Rescue teams
+    std::vector<Resource> resources;                // Relief items
+    int knapsackCapacity;                           // Max vehicle payload
 };
 
-InputData loadHardcodedData(); // fix sample data for now anyway
+// Load a fixed sample scenario for testing.
+InputData loadHardcodedData();
 
-
-#endif
+#endif // DATA_H

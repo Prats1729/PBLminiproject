@@ -1,68 +1,84 @@
 #include <iostream>
+#include <limits>
+#include <vector>
+
 #include "Data.h"
 #include "Graph.h"
 #include "bfs.h"
 #include "dijkstra.h"
 #include "knapsack.h"
+#include "greedy.h"
 
 using namespace std;
 
 int main() {
+    // ── Load scenario ──────────────────────────────────────────
     cout << "---Loading Disaster Scenario---\n";
     InputData disasterData = loadHardcodedData();
 
+    // ── Build road network ─────────────────────────────────────
     cout << "---Creating Graph---\n";
     Graph disasterGraph(disasterData.numNodes);
     disasterGraph.setNodeNames(disasterData.nodeNames);
 
     cout << "---Building Road Network---\n";
-    for (const auto& edge : disasterData.edges) {
-        int u = get<0>(edge);
-        int v = get<1>(edge);
-        int weight = get<2>(edge);
-
+    for (const auto& [u, v, weight] : disasterData.edges) {
         disasterGraph.addEdge(u, v, weight);
         cout << "Added road: " << disasterData.nodeNames[u] << " <--> "
              << disasterData.nodeNames[v] << " ( " << weight
              << " mins travel )\n";
     }
 
+    // ── Display graph ──────────────────────────────────────────
     cout << "---Displaying Graph Map---\n";
     disasterGraph.printGraph();
 
-    // ---------------------------------------------------------
-    //  BFS: Print **all** responders reachable from start node
-    // ---------------------------------------------------------
-    vector<int> responderNodeIds = {0, 1};  // known responder IDs
+    // ── BFS: all reachable responders ──────────────────────────
+    vector<int> responderNodeIds;
+    for (const auto& r : disasterData.responders) {
+        responderNodeIds.push_back(r.nodeId);
+    }
+
+    // ── Greedy Triage Prioritization ───────────────────────────
+    cout << "\n---Greedy Optimization: Triage Priorities---\n";
+    vector<TriageResult> triageResults = GreedySolver::computeTriage(
+        disasterData.sites, disasterGraph, disasterData.responders);
+
+    for (size_t i = 0; i < triageResults.size(); ++i) {
+        cout << i + 1 << ". " << triageResults[i].site.name 
+             << " [Severity: " << triageResults[i].site.severity 
+             << ", Pop: " << triageResults[i].site.population 
+             << "] -> Nearest Rsp: " << triageResults[i].nearestResponderTime 
+             << "m  |  Score: " << triageResults[i].triageScore << "\n";
+    }
+
+    // Use the highest-priority disaster site as the origin
+    int disasterOrigin = triageResults.empty() ? 0 : triageResults[0].site.nodeId;
+
     vector<int> allReachable = bfsAllResponders(
-        disasterGraph,        // graph
-        0,                    // start node (disaster origin)
-        responderNodeIds);    // list of possible responders
+        disasterGraph, disasterOrigin, responderNodeIds);
 
     cout << "\n---BFS: All Reachable Responders---\n";
     if (!allReachable.empty()) {
-        cout << "Responders reachable from node 0:\n";
+        cout << "Responders reachable from " << disasterData.nodeNames[disasterOrigin] << ":\n";
         for (int id : allReachable) {
-            cout << "  - Responder ID " << id
-                 << " (" << disasterData.nodeNames[id] << ")\n";
+            cout << "  - Responder at " << disasterData.nodeNames[id] << "\n";
         }
     } else {
         cout << "No responders reachable from the start node.\n";
     }
 
-    // ---------------------------------------------------------
-    // Dijkstra: Find the *fastest* responder (minimum travel time)
-    // ---------------------------------------------------------
+    // ── Dijkstra: nearest responder by travel time ─────────────
     Dijkstra dijkstra(disasterGraph);
-    dijkstra.computeShortestPaths(0);   // pre‑compute distances from start node
+    dijkstra.computeShortestPaths(disasterOrigin);
 
     int closestResponder = -1;
     int minDistance = numeric_limits<int>::max();
-    for (int responderId : responderNodeIds) {
-        int dist = dijkstra.getDistance(responderId);
+    for (int rid : responderNodeIds) {
+        int dist = dijkstra.getDistance(rid);
         if (dist < minDistance) {
-            minDistance = dist;
-            closestResponder = responderId;
+            minDistance       = dist;
+            closestResponder  = rid;
         }
     }
 
@@ -76,17 +92,13 @@ int main() {
         cout << "No responder reachable.\n";
     }
 
-    // ---------------------------------------------------------
-    //  Knapsack: Optimal resource allocation for rescue truck
-    // ---------------------------------------------------------
+    // ── Knapsack: optimal resource allocation ──────────────────
     if (closestResponder != -1) {
-        // Create knapsack solver for this responder
         KnapsackSolver solver(disasterData);
         vector<int> optimalResources = solver.allocateResources(closestResponder);
 
         cout << "\n---Optimal Resource Allocation---\n";
-        cout << "Responder ID " << closestResponder
-             << " can carry:\n";
+        cout << "Responder ID " << closestResponder << " can carry:\n";
         for (int resourceId : optimalResources) {
             const Resource& res = disasterData.resources[resourceId];
             cout << "  - " << res.name

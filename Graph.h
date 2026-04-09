@@ -1,48 +1,40 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <vector>
 #include <string>
 #include <utility>
-#include <iostream>
+#include <vector>
 
-using Edge = std::pair<int, int>; // Edge = (destination node index, weight)
+// Edge: (destination node index, travel-time weight)
+using Edge = std::pair<int, int>;
 
-// This is the graph class, it holds all graph related data and operations
+// Weighted undirected graph representing the city road network.
 class Graph {
-    private:
-        int numNodes;  // total nodes in graph
-        std::vector<Edge>* adj; // Pointer to an array of adjacency lists
-        std::vector<std::string> nodeNames; // name of each node of graph
+public:
+    explicit Graph(int numNodes);
 
-    public:
-        // COnstructor for the graph
-        explicit Graph(int n);
+    // Add a bidirectional road between nodes u and v with weight w.
+    void addEdge(int u, int v, int w);
 
-        // Destructor to free the adj vector
-        ~Graph() {
-            delete[] adj;
-        }
+    // Print the full adjacency list to stdout.
+    void printGraph() const;
 
-        // Add a bidirectional edge between u and v
-        void addEdge(int u, int v, int w);
+    // Print a step-by-step rescue route for the given node path.
+    void visualizeRoute(const std::vector<int>& path) const;
 
-        // For visualisation of the graph
-        void printGraph();
+    // --- Accessors ---
+    int getNumNodes() const { return numNodes_; }
 
-        // For visualisation of routes
-        void visualizeRoute(const std::vector<int>& path);
+    const std::vector<Edge>& getAdj(int node) const { return adj_[node]; }
 
-        int getNumNodes() const {return numNodes;}
+    void setNodeNames(const std::vector<std::string>& names) { nodeNames_ = names; }
 
-        // getting adj list for reference
-        const std::vector<Edge>& getAdj(int node) const { return adj[node]; }
+    const std::string& getNodeName(int id) const { return nodeNames_[id]; }
 
-        void setNodeNames(const std::vector<std::string>& names){
-            nodeNames = names;
-        }
-
-        
+private:
+    int numNodes_;
+    std::vector<std::vector<Edge>> adj_;       // adjacency lists
+    std::vector<std::string>       nodeNames_; // label per node
 };
 
-#endif
+#endif // GRAPH_H
